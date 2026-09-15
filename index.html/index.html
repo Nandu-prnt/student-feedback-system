@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Feedback System</title>
+  <link rel="stylesheet" href="../style.css/style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">SF</div>
+        <div>
+          <h2>FeedbackHub</h2>
+          <span>Student Feedback System</span>
+        </div>
+      </div>
+
+      <nav>
+        <button class="nav-item active" data-page="dashboard">⌂ <span>Dashboard</span></button>
+        <button class="nav-item" data-page="feedback">✎ <span>Give Feedback</span></button>
+        <button class="nav-item" data-page="history">◷ <span>My Feedback</span></button>
+        <button class="nav-item" data-page="courses">▣ <span>My Courses</span></button>
+        <button class="nav-item" data-page="profile">◎ <span>Profile</span></button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="mini-user">
+          <div class="avatar">AS</div>
+          <div><strong>Alex Student</strong><small>CSBS • S3</small></div>
+        </div>
+        <button class="logout" id="logoutBtn">↪ Logout</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="menu-btn" id="menuBtn">☰</button>
+        <div>
+          <p class="eyebrow">ACADEMIC PORTAL</p>
+          <h1 id="pageTitle">Dashboard</h1>
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn" title="Notifications">♧</button>
+          <div class="top-avatar">AS</div>
+        </div>
+      </header>
+
+      <section class="content">
+        <!-- Dashboard -->
+        <div class="page active" id="dashboard">
+          <div class="welcome">
+            <div>
+              <p class="eyebrow">YOUR VOICE MATTERS</p>
+              <h2>Shape a better learning experience.</h2>
+              <p>Share thoughtful feedback with the people who make your classes better.</p>
+            </div>
+            <button class="primary" data-go="feedback">Start feedback <span>↗</span></button>
+          </div>
+
+          <div class="stats">
+            <div class="stat-card"><span>Enrolled courses</span><strong>5</strong><small>Current semester</small></div>
+            <div class="stat-card"><span>Your responses</span><strong id="feedbackCount">0</strong><small>Complete your first review</small></div>
+            <div class="stat-card"><span>To complete</span><strong>2</strong><small>Forms waiting for you</small></div>
+          </div>
+
+          <div class="grid-2">
+            <div class="panel">
+              <div class="panel-head"><div><p class="eyebrow">ACTION NEEDED</p><h3>Courses waiting for you</h3></div><span class="badge amber">2 pending</span></div>
+              <div class="course-row">
+                <div class="course-icon">DB</div>
+                <div class="course-info"><strong>Database Management Systems</strong><span>Dr. Meera Nair • CS301</span></div>
+                <button class="small-btn" data-go="feedback" data-course="Database Management Systems — CS301">Rate</button>
+              </div>
+              <div class="course-row">
+                <div class="course-icon">CO</div>
+                <div class="course-info"><strong>Computer Organization</strong><span>Prof. Rahul Mathew • CS302</span></div>
+                <button class="small-btn" data-go="feedback" data-course="Computer Organization — CS302">Rate</button>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head"><div><p class="eyebrow">YOUR ACTIVITY</p><h3>Recent responses</h3></div><button class="text-btn" data-go="history">View all</button></div>
+              <div class="empty-activity" id="recentEmpty"><span>◎</span><p>Your submitted feedback will appear here.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feedback -->
+        <div class="page" id="feedback">
+          <div class="page-intro">
+            <p class="eyebrow">FEEDBACK FORM</p>
+            <h2>Share your experience</h2>
+            <p>Your feedback helps faculty understand what is working well and where students need more support.</p>
+          </div>
+
+          <div class="form-panel">
+            <div class="form-top">
+              <div>
+                <label>Course offering</label>
+                <select id="courseSelect">
+                  <option>Database Management Systems — CS301</option>
+                  <option>Computer Organization — CS302</option>
+                  <option>Data Structures — CS303</option>
+                  <option>Business Communication — HU301</option>
+                </select>
+              </div>
+              <label class="anonymous"><input type="checkbox" id="anonymous"> Submit anonymously</label>
+            </div>
+
+            <div class="form-progress" aria-live="polite">
+              <div><strong id="progressLabel">0 of 5 answered</strong><span>All ratings are required</span></div>
+              <div class="progress-track"><span id="progressBar"></span></div>
+            </div>
+
+            <div class="question">
+              <div><span class="q-number">01</span><div><strong>How clearly does the faculty explain concepts?</strong><p>Consider clarity, examples and pace of teaching.</p></div></div>
+              <div class="rating-group" data-question="1"></div>
+            </div>
+            <div class="question">
+              <div><span class="q-number">02</span><div><strong>How effective are the teaching methods?</strong><p>Think about lectures, demonstrations and activities.</p></div></div>
+              <div class="rating-group" data-question="2"></div>
+            </div>
+            <div class="question">
+              <div><span class="q-number">03</span><div><strong>How well does the faculty interact with students?</strong><p>Consider accessibility and willingness to answer questions.</p></div></div>
+              <div class="rating-group" data-question="3"></div>
+            </div>
+            <div class="question">
+              <div><span class="q-number">04</span><div><strong>How useful are the course materials?</strong><p>Consider notes, references, examples and practical work.</p></div></div>
+              <div class="rating-group" data-question="4"></div>
+            </div>
+            <div class="question">
+              <div><span class="q-number">05</span><div><strong>Overall, how satisfied are you with this course?</strong><p>Give an overall rating from 1 to 10.</p></div></div>
+              <div class="rating-group" data-question="5"></div>
+            </div>
+
+            <div class="comment-box">
+              <label for="comment">Additional comments <span>(optional)</span></label>
+              <textarea id="comment" rows="5" placeholder="Tell us what you liked or what could be improved..."></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button class="secondary" data-go="dashboard">Cancel</button>
+              <button class="primary" id="submitFeedback">Submit Feedback ✓</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- History -->
+        <div class="page" id="history">
+          <div class="page-intro"><p class="eyebrow">YOUR RESPONSES</p><h2>Feedback history</h2><p>A record of feedback you have submitted.</p></div>
+          <div class="panel table-panel">
+            <table>
+              <thead><tr><th>Course</th><th>Faculty</th><th>Date</th><th>Rating</th><th>Status</th></tr></thead>
+              <tbody id="historyBody"><tr id="historyEmpty"><td colspan="5" class="empty-history">No feedback submitted yet. Your responses will appear here.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Courses -->
+        <div class="page" id="courses">
+          <div class="page-intro"><p class="eyebrow">CURRENT SEMESTER</p><h2>My courses</h2><p>Courses and faculty assigned to you.</p></div>
+          <div class="course-grid">
+            <div class="course-card"><div class="course-icon big">DB</div><h3>Database Management Systems</h3><p>CS301 • 4 Credits</p><span>Dr. Meera Nair</span></div>
+            <div class="course-card"><div class="course-icon big">CO</div><h3>Computer Organization</h3><p>CS302 • 4 Credits</p><span>Prof. Rahul Mathew</span></div>
+            <div class="course-card"><div class="course-icon big">DS</div><h3>Data Structures</h3><p>CS303 • 4 Credits</p><span>Dr. Anil Kumar</span></div>
+            <div class="course-card"><div class="course-icon big">DM</div><h3>Discrete Mathematics</h3><p>MA301 • 3 Credits</p><span>Dr. Suresh P.</span></div>
+            <div class="course-card"><div class="course-icon big">BC</div><h3>Business Communication</h3><p>HU301 • 3 Credits</p><span>Ms. Anjali Joseph</span></div>
+          </div>
+        </div>
+
+        <!-- Profile -->
+        <div class="page" id="profile">
+          <div class="page-intro"><p class="eyebrow">ACCOUNT</p><h2>Student profile</h2><p>Your basic academic information.</p></div>
+          <div class="profile-panel">
+            <div class="profile-header"><div class="profile-avatar">AS</div><div><h2>Alex Student</h2><p>Student ID: 24CS301 • Computer Science & Business Systems</p></div></div>
+            <div class="profile-fields">
+              <div><label>Student ID</label><strong>24CS301</strong></div>
+              <div><label>Name</label><strong>Alex Student</strong></div>
+              <div><label>Email</label><strong>alex.student@college.edu</strong></div>
+              <div><label>Semester</label><strong>3rd Semester</strong></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast">Feedback submitted successfully ✓</div>
+  <script src="../script.js/script.js"></script>
+</body>
+</html>
