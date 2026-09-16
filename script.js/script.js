@@ -1,3 +1,65 @@
+// ===== DB-ALIGNED FRONTEND DATA =====
+const studentProfile = {
+  student_id: 1001,
+  name: "Alex Student",
+  email: "alex.student@college.edu",
+  semester: 3,
+  department: "Computer Science & Business Systems"
+};
+
+const facultyList = [
+  { faculty_id: 1, faculty_name: "Dr. Meera Nair", dept: "CSE" },
+  { faculty_id: 2, faculty_name: "Prof. Rahul Mathew", dept: "CSE" },
+  { faculty_id: 3, faculty_name: "Dr. Anil Kumar", dept: "CSE" },
+  { faculty_id: 4, faculty_name: "Dr. Suresh P.", dept: "Mathematics" },
+  { faculty_id: 5, faculty_name: "Ms. Anjali Joseph", dept: "Humanities" }
+];
+
+const courseCatalog = [
+  { course_id: 1, course_name: "Database Management Systems", credits: 4, course_code: "CS301" },
+  { course_id: 2, course_name: "Computer Organization", credits: 4, course_code: "CS302" },
+  { course_id: 3, course_name: "Data Structures", credits: 4, course_code: "CS303" },
+  { course_id: 4, course_name: "Discrete Mathematics", credits: 3, course_code: "MA301" },
+  { course_id: 5, course_name: "Business Communication", credits: 3, course_code: "HU301" }
+];
+
+const courseOfferings = [
+  { offering_id: 101, acad_year: "2025-2026", faculty_id: 1, course_id: 1, course_name: "Database Management Systems", course_code: "CS301" },
+  { offering_id: 102, acad_year: "2025-2026", faculty_id: 2, course_id: 2, course_name: "Computer Organization", course_code: "CS302" },
+  { offering_id: 103, acad_year: "2025-2026", faculty_id: 3, course_id: 3, course_name: "Data Structures", course_code: "CS303" },
+  { offering_id: 104, acad_year: "2025-2026", faculty_id: 4, course_id: 4, course_name: "Discrete Mathematics", course_code: "MA301" },
+  { offering_id: 105, acad_year: "2025-2026", faculty_id: 5, course_id: 5, course_name: "Business Communication", course_code: "HU301" }
+];
+
+const feedbackForms = [
+  { form_id: 1, title: "Semester Feedback Form", status: "ACTIVE" },
+  { form_id: 2, title: "Mid Semester Feedback", status: "CLOSED" }
+];
+
+const questionBank = [
+  { question_id: 1, q_text: "How clearly does the faculty explain concepts?", q_type: "rating" },
+  { question_id: 2, q_text: "How effective are the teaching methods?", q_type: "rating" },
+  { question_id: 3, q_text: "How well does the faculty interact with students?", q_type: "rating" },
+  { question_id: 4, q_text: "How useful are the course materials?", q_type: "rating" },
+  { question_id: 5, q_text: "Overall, how satisfied are you with this course?", q_type: "rating" }
+];
+
+function findCourseOfferingByLabel(label) {
+  return courseOfferings.find(offering => `${offering.course_name} — ${offering.course_code}` === label) || courseOfferings[0];
+}
+
+function buildCourseOptionMarkup() {
+  return courseOfferings
+    .map(offering => `<option value="${offering.course_name} — ${offering.course_code}">${offering.course_name} — ${offering.course_code}</option>`)
+    .join("");
+}
+
+function renderCourseOptions() {
+  const courseSelect = document.getElementById("courseSelect");
+  if (!courseSelect) return;
+  courseSelect.innerHTML = buildCourseOptionMarkup();
+}
+
 // ===== STATE MANAGEMENT =====
 let currentUser = "student"; // student or admin
 let allFeedback = [];
@@ -80,32 +142,45 @@ document.getElementById("submitFeedback").addEventListener("click", () => {
     return;
   }
 
-  const course = document.getElementById("courseSelect").value;
-  const courseName = course.split(" — ")[0];
+  const courseLabel = document.getElementById("courseSelect").value;
+  const offering = findCourseOfferingByLabel(courseLabel);
+  const faculty = facultyList.find(f => f.faculty_id === offering.faculty_id);
+  const course = courseCatalog.find(c => c.course_id === offering.course_id);
+
   const ratings = groups.map(g => Number(g.querySelector(".selected").textContent));
   const avg = (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1);
   const isAnonymous = document.getElementById("anonymous").checked;
   const comment = document.getElementById("comment").value;
 
-  // Create feedback object and store
   const feedback = {
-    id: Date.now(),
-    course: courseName,
-    courseCode: course.includes("CS301") ? "CS301" : course.includes("CS302") ? "CS302" : course.includes("CS303") ? "CS303" : course.includes("MA301") ? "MA301" : "HU301",
-    faculty: "Faculty",
-    student: isAnonymous ? "Anonymous" : "Alex Student",
+    feedback_id: Date.now(),
+    student_id: studentProfile.student_id,
+    student: isAnonymous ? "Anonymous" : studentProfile.name,
+    offering_id: offering.offering_id,
+    form_id: feedbackForms[0].form_id,
+    title: feedbackForms[0].title,
+    course_id: course.course_id,
+    course: course.course_name,
+    courseCode: course.course_code,
+    faculty_id: faculty.faculty_id,
+    faculty: faculty.faculty_name,
     date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
     rating: avg,
     ratings: ratings,
     comment: comment,
-    anonymous: isAnonymous
+    anonymous: isAnonymous,
+    questions: questionBank.map((q, index) => ({
+      question_id: q.question_id,
+      q_text: q.q_text,
+      rating: ratings[index]
+    }))
   };
 
   allFeedback.push(feedback);
 
   // Update student history
   const row = document.createElement("tr");
-  row.innerHTML = `<td>${courseName}</td><td>Faculty</td><td>${feedback.date}</td><td><b>${avg}/10</b></td><td><span class="badge green">Submitted</span></td>`;
+  row.innerHTML = `<td>${course.course_name}</td><td>${faculty.faculty_name}</td><td>${feedback.date}</td><td><b>${avg}/10</b></td><td><span class="badge green">Submitted</span></td>`;
   document.getElementById("historyEmpty")?.remove();
   document.getElementById("historyBody").prepend(row);
 
@@ -113,7 +188,7 @@ document.getElementById("submitFeedback").addEventListener("click", () => {
   document.getElementById("recentEmpty")?.remove();
   const activity = document.createElement("div");
   activity.className = "activity";
-  activity.innerHTML = `<span class="dot"></span><div><strong>${courseName}</strong><p>Submitted just now</p></div><span class="rating">${avg}/10</span>`;
+  activity.innerHTML = `<span class="dot"></span><div><strong>${course.course_name}</strong><p>Submitted just now</p></div><span class="rating">${avg}/10</span>`;
   document.querySelector("#dashboard .panel:nth-child(2)").appendChild(activity);
 
   // Update counter
@@ -129,7 +204,7 @@ document.getElementById("submitFeedback").addEventListener("click", () => {
   // Redirect and notify
   toast("Feedback submitted successfully ✓");
   setTimeout(() => showPage("history"), 700);
-  
+
   // Update admin views
   updateAdminDashboard();
   updateAdminFeedbackTable();
@@ -163,21 +238,19 @@ function switchAccount(account) {
   currentUser = account;
 
   if (account === "student") {
-    // Show student UI
     document.getElementById("studentNav").classList.remove("hidden");
     document.getElementById("adminNav").classList.add("hidden");
     document.getElementById("brandSubtitle").textContent = "Student Feedback System";
     document.getElementById("pageEyebrow").textContent = "ACADEMIC PORTAL";
     document.getElementById("avatarDisplay").textContent = "AS";
-    document.getElementById("userNameDisplay").textContent = "Alex Student";
-    document.getElementById("userRoleDisplay").textContent = "CSBS • S3";
+    document.getElementById("userNameDisplay").textContent = studentProfile.name;
+    document.getElementById("userRoleDisplay").textContent = `${studentProfile.department} • S${studentProfile.semester}`;
     document.getElementById("topAvatar").textContent = "AS";
     document.getElementById("switchAccountBtn").textContent = "🔄 Switch Account";
-    
+
     showPage("dashboard");
     toast("Switched to Student Account");
   } else {
-    // Show admin UI
     document.getElementById("studentNav").classList.add("hidden");
     document.getElementById("adminNav").classList.remove("hidden");
     document.getElementById("brandSubtitle").textContent = "Admin Dashboard";
@@ -187,7 +260,7 @@ function switchAccount(account) {
     document.getElementById("userRoleDisplay").textContent = "System Admin";
     document.getElementById("topAvatar").textContent = "AD";
     document.getElementById("switchAccountBtn").textContent = "🔄 Student";
-    
+
     updateAdminDashboard();
     showPage("admin-dashboard");
     toast("Switched to Admin Account");
@@ -207,7 +280,6 @@ function updateAdminDashboard() {
   document.getElementById("avgRating").textContent = avgRating;
   document.getElementById("coursesRated").textContent = uniqueCourses;
 
-  // Top rated courses
   const courseRatings = {};
   allFeedback.forEach(f => {
     if (!courseRatings[f.course]) courseRatings[f.course] = [];
@@ -228,7 +300,6 @@ function updateAdminDashboard() {
     : "<p style='color:#999;'>No feedback yet</p>";
   document.getElementById("topCourses").innerHTML = topCoursesHtml;
 
-  // Recent submissions
   const recentFeedback = [...allFeedback].reverse().slice(0, 5);
   const recentHtml = recentFeedback.length > 0
     ? recentFeedback.map(f => `<div class="feedback-item"><strong>${f.course}</strong><span>${f.rating}/10</span><small>${f.date}</small></div>`).join("")
@@ -268,7 +339,7 @@ function updateAdminFeedbackTable() {
         <td>${f.student}</td>
         <td>${f.date}</td>
         <td><b>${f.rating}/10</b></td>
-        <td><button class="text-btn" onclick="viewFeedbackDetail(${f.id})">View</button></td>
+        <td><button class="text-btn" onclick="viewFeedbackDetail(${f.feedback_id})">View</button></td>
       </tr>
     `)
     .join("");
@@ -288,7 +359,6 @@ function updateCourseMetrics() {
     document.getElementById(`rating${code}`).textContent = avg;
   });
 
-  // Faculty cards
   const facultyData = [
     { name: "Dr. Meera Nair", code: "CS301" },
     { name: "Prof. Rahul Mathew", code: "CS302" },
@@ -319,20 +389,12 @@ function updateCourseMetrics() {
 
 // ===== VIEW FEEDBACK DETAIL =====
 function viewFeedbackDetail(id) {
-  const feedback = allFeedback.find(f => f.id === id);
+  const feedback = allFeedback.find(f => f.feedback_id === id);
   if (!feedback) return;
 
   const modalBody = document.getElementById("feedbackModalBody");
-  const questions = [
-    "How clearly does the faculty explain concepts?",
-    "How effective are the teaching methods?",
-    "How well does the faculty interact with students?",
-    "How useful are the course materials?",
-    "Overall, how satisfied are you with this course?"
-  ];
-
-  const ratingsHtml = questions
-    .map((q, i) => `<div><strong>${q}</strong><span>${feedback.ratings[i]}/10</span></div>`)
+  const ratingsHtml = questionBank
+    .map((q, i) => `<div><strong>${q.q_text}</strong><span>${feedback.ratings[i]}/10</span></div>`)
     .join("");
 
   modalBody.innerHTML = `
@@ -352,12 +414,10 @@ function viewFeedbackDetail(id) {
   document.getElementById("feedbackModal").classList.add("active");
 }
 
-// Close feedback modal
 document.getElementById("closeFeedbackModal")?.addEventListener("click", () => {
   document.getElementById("feedbackModal").classList.remove("active");
 });
 
-// Filter listeners
 document.getElementById("adminCourseFilter")?.addEventListener("change", updateAdminFeedbackTable);
 document.getElementById("adminRatingFilter")?.addEventListener("change", updateAdminFeedbackTable);
 
@@ -370,7 +430,6 @@ function updateAnalytics() {
     return;
   }
 
-  // Rating distribution
   const ratingBuckets = { "9-10": 0, "7-8": 0, "5-6": 0, "3-4": 0, "1-2": 0 };
   allFeedback.forEach(f => {
     const r = parseFloat(f.rating);
@@ -394,7 +453,6 @@ function updateAnalytics() {
     .join("");
   document.getElementById("ratingChart").innerHTML = ratingChartHtml;
 
-  // Question ratings
   const questionTitles = ["Clarity", "Methods", "Interaction", "Materials", "Overall"];
   const questionAvgs = [0, 1, 2, 3, 4].map(i =>
     (allFeedback.reduce((sum, f) => sum + f.ratings[i], 0) / allFeedback.length).toFixed(1)
@@ -413,7 +471,6 @@ function updateAnalytics() {
     .join("");
   document.getElementById("questionChart").innerHTML = questionChartHtml;
 
-  // Comments
   const comments = allFeedback.filter(f => f.comment).map(f => f.comment);
   const themesHtml = comments.length > 0
     ? comments.map(c => `<div style="padding:10px;background:#f5f5f5;margin-bottom:10px;border-radius:4px;"><p>${c}</p></div>`).join("")
@@ -421,7 +478,6 @@ function updateAnalytics() {
   document.getElementById("themesContainer").innerHTML = themesHtml;
 }
 
-// Update analytics when switching to admin
 const originalShowPage = showPage;
 showPage = function(id) {
   originalShowPage(id);
@@ -429,3 +485,26 @@ showPage = function(id) {
     updateAnalytics();
   }
 };
+
+renderCourseOptions();
+
+if (document.getElementById("userNameDisplay")) {
+  document.getElementById("userNameDisplay").textContent = studentProfile.name;
+}
+if (document.getElementById("userRoleDisplay")) {
+  document.getElementById("userRoleDisplay").textContent = `${studentProfile.department} • S${studentProfile.semester}`;
+}
+if (document.getElementById("profile") && document.getElementById("profile").querySelector(".profile-header h2")) {
+  document.getElementById("profile").querySelector(".profile-header h2").textContent = studentProfile.name;
+}
+if (document.getElementById("profile") && document.getElementById("profile").querySelector(".profile-header p")) {
+  document.getElementById("profile").querySelector(".profile-header p").textContent = `Student ID: ${studentProfile.student_id} • ${studentProfile.department}`;
+}
+
+const courseFilterSelect = document.getElementById("adminCourseFilter");
+if (courseFilterSelect) {
+  courseFilterSelect.innerHTML = `
+    <option value="">All courses</option>
+    ${courseCatalog.map(course => `<option value="${course.course_name}">${course.course_name}</option>`).join("")}
+  `;
+}
