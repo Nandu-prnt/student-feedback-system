@@ -7,7 +7,39 @@
   <link rel="stylesheet" href="../style.css/style.css">
 </head>
 <body>
-  <div class="app">
+  <div id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <p class="eyebrow">SECURE ACCESS</p>
+      <h2>Login to FeedbackHub</h2>
+      <p class="auth-subtitle">Use a demo student or admin account.</p>
+
+      <form id="loginForm">
+        <div class="auth-field">
+          <label for="loginUsername">Username</label>
+          <input id="loginUsername" type="text" placeholder="Enter username" value="student" required>
+        </div>
+
+        <div class="auth-field">
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" placeholder="Enter password" value="student123" required>
+        </div>
+
+        <button type="submit" class="primary auth-btn">Login</button>
+      </form>
+
+      <div id="loginError" class="auth-error" hidden></div>
+
+      <div class="demo-accounts">
+        <strong>Demo accounts</strong>
+        <ul>
+          <li>Student: username = student, password = student123</li>
+          <li>Admin: username = admin, password = admin123</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div id="appShell" class="app hidden">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
         <div class="brand-mark" id="brandMark">SF</div>
@@ -42,8 +74,7 @@
           <div class="avatar" id="avatarDisplay">AS</div>
           <div><strong id="userNameDisplay">Alex Student</strong><small id="userRoleDisplay">CSBS • S3</small></div>
         </div>
-        <button class="logout" id="switchAccountBtn">🔄 Switch Account</button>
-        <button class="logout" id="logoutBtn" style="display:none;">↪ Logout</button>
+        <button class="logout" id="logoutBtn">↪ Logout</button>
       </div>
     </aside>
 
@@ -62,7 +93,7 @@
 
       <section class="content">
         <!-- ===== STUDENT PAGES ===== -->
-        
+
         <!-- Dashboard -->
         <div class="page active" id="dashboard">
           <div class="welcome">
@@ -204,7 +235,7 @@
         <!-- Admin Dashboard -->
         <div class="page" id="admin-dashboard">
           <div class="page-intro"><p class="eyebrow">ADMINISTRATION</p><h2>Feedback Overview</h2><p>System-wide feedback analytics and insights.</p></div>
-          
+
           <div class="stats">
             <div class="stat-card"><span>Total feedback</span><strong id="totalFeedback">0</strong><small>All time</small></div>
             <div class="stat-card"><span>Average rating</span><strong id="avgRating">—</strong><small>Across all courses</small></div>
@@ -227,7 +258,7 @@
         <!-- Admin Feedback -->
         <div class="page" id="admin-feedback">
           <div class="page-intro"><p class="eyebrow">SUBMISSIONS</p><h2>All feedback</h2><p>View and manage all submitted feedback from students.</p></div>
-          
+
           <div class="panel filter-panel">
             <div class="filter-row">
               <div>
@@ -288,7 +319,7 @@
         <!-- Admin Analytics -->
         <div class="page" id="admin-analytics">
           <div class="page-intro"><p class="eyebrow">INSIGHTS</p><h2>Analytics & Trends</h2><p>Detailed feedback analysis and patterns.</p></div>
-          
+
           <div class="grid-2">
             <div class="panel">
               <div class="panel-head"><p class="eyebrow">RATING DISTRIBUTION</p></div>
@@ -308,36 +339,6 @@
         </div>
       </section>
     </main>
-  </div>
-
-  <!-- Account Switch Modal -->
-  <div class="modal" id="switchModal">
-    <div class="modal-content">
-      <h3>Switch Account</h3>
-      <div class="account-options">
-        <button class="account-btn" data-account="student">
-          <span class="account-icon">👤</span>
-          <strong>Student Account</strong>
-          <small>Alex Student</small>
-        </button>
-        <button class="account-btn" data-account="admin">
-          <span class="account-icon">👨‍💼</span>
-          <strong>Admin Account</strong>
-          <small>Administrator</small>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Feedback Detail Modal -->
-  <div class="modal" id="feedbackModal">
-    <div class="modal-content large">
-      <div class="modal-header">
-        <h3 id="feedbackModalTitle">Feedback Details</h3>
-        <button class="close-btn" id="closeFeedbackModal">✕</button>
-      </div>
-      <div id="feedbackModalBody" class="modal-body"></div>
-    </div>
   </div>
 
   <div class="toast" id="toast">Feedback submitted successfully ✓</div>
