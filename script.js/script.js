@@ -44,13 +44,6 @@ const questionBank = [
   { question_id: 5, q_text: "Overall, how satisfied are you with this course?", q_type: "rating" }
 ];
 
-const demoAccounts = {
-  student: { username: "student", password: "student123", role: "student", name: "Alex Student" },
-  admin: { username: "admin", password: "admin123", role: "admin", name: "Administrator" }
-};
-
-const AUTH_KEY = "feedbackhub_demo_auth";
-
 function findCourseOfferingByLabel(label) {
   return courseOfferings.find(offering => `${offering.course_name} — ${offering.course_code}` === label) || courseOfferings[0];
 }
@@ -68,7 +61,7 @@ function renderCourseOptions() {
 }
 
 // ===== STATE MANAGEMENT =====
-let currentUser = null;
+let currentUser = "student"; // student or admin
 let allFeedback = [];
 
 const pages = document.querySelectorAll(".page");
@@ -92,121 +85,11 @@ const courseSelect = document.getElementById("courseSelect");
 const progressLabel = document.getElementById("progressLabel");
 const progressBar = document.getElementById("progressBar");
 
-function showLogin() {
-  const authScreen = document.getElementById("authScreen");
-  const appShell = document.getElementById("appShell");
-  if (authScreen) authScreen.classList.remove("hidden");
-  if (appShell) appShell.classList.add("hidden");
-}
-
-function showApp() {
-  const authScreen = document.getElementById("authScreen");
-  const appShell = document.getElementById("appShell");
-  if (authScreen) authScreen.classList.add("hidden");
-  if (appShell) appShell.classList.remove("hidden");
-}
-
-function setCurrentUser(role) {
-  currentUser = role;
-  if (!role || !demoAccounts[role]) {
-    localStorage.removeItem(AUTH_KEY);
-    showLogin();
-    return;
-  }
-
-  localStorage.setItem(AUTH_KEY, role);
-
-  const studentNav = document.getElementById("studentNav");
-  const adminNav = document.getElementById("adminNav");
-
-  if (role === "student") {
-    if (studentNav) studentNav.classList.remove("hidden");
-    if (adminNav) adminNav.classList.add("hidden");
-    document.getElementById("brandSubtitle").textContent = "Student Feedback System";
-    document.getElementById("pageEyebrow").textContent = "ACADEMIC PORTAL";
-    document.getElementById("avatarDisplay").textContent = "AS";
-    document.getElementById("userNameDisplay").textContent = studentProfile.name;
-    document.getElementById("userRoleDisplay").textContent = `${studentProfile.department} • S${studentProfile.semester}`;
-    document.getElementById("topAvatar").textContent = "AS";
-    showApp();
-    showPage("dashboard");
-    toast("Logged in as Student");
-  } else {
-    if (studentNav) studentNav.classList.add("hidden");
-    if (adminNav) adminNav.classList.remove("hidden");
-    document.getElementById("brandSubtitle").textContent = "Admin Dashboard";
-    document.getElementById("pageEyebrow").textContent = "ADMINISTRATION";
-    document.getElementById("avatarDisplay").textContent = "AD";
-    document.getElementById("userNameDisplay").textContent = "Administrator";
-    document.getElementById("userRoleDisplay").textContent = "System Admin";
-    document.getElementById("topAvatar").textContent = "AD";
-    showApp();
-    updateAdminDashboard();
-    showPage("admin-dashboard");
-    toast("Logged in as Admin");
-  }
-}
-
-function handleLoginSubmit(event) {
-  event.preventDefault();
-
-  const username = document.getElementById("loginUsername").value.trim();
-  const password = document.getElementById("loginPassword").value.trim();
-  const errorBox = document.getElementById("loginError");
-
-  const match = Object.values(demoAccounts).find(account => account.username === username && account.password === password);
-
-  if (!match) {
-    if (errorBox) {
-      errorBox.hidden = false;
-      errorBox.textContent = "Invalid username or password.";
-    }
-    return;
-  }
-
-  if (errorBox) {
-    errorBox.hidden = true;
-    errorBox.textContent = "";
-  }
-
-  setCurrentUser(match.role);
-}
-
-function handleLogout() {
-  currentUser = null;
-  localStorage.removeItem(AUTH_KEY);
-  document.getElementById("loginForm").reset();
-  showLogin();
-  toast("Logged out successfully");
-}
-
-function restoreSavedSession() {
-  const savedRole = localStorage.getItem(AUTH_KEY);
-  if (savedRole && demoAccounts[savedRole]) {
-    setCurrentUser(savedRole);
-  } else {
-    showLogin();
-  }
-}
-
 // ===== PAGE NAVIGATION =====
 function showPage(id) {
-  if (!currentUser) {
-    showLogin();
-    return;
-  }
-
-  const allowedPages = {
-    student: ["dashboard", "feedback", "history", "courses", "profile"],
-    admin: ["admin-dashboard", "admin-feedback", "admin-courses", "admin-faculty", "admin-analytics"]
-  };
-
-  const rolePages = allowedPages[currentUser] || [];
-  const safeId = rolePages.includes(id) ? id : (currentUser === "student" ? "dashboard" : "admin-dashboard");
-
-  pages.forEach(p => p.classList.toggle("active", p.id === safeId));
-  navItems.forEach(n => n.classList.toggle("active", n.dataset.page === safeId));
-  title.textContent = titles[safeId] || "Dashboard";
+  pages.forEach(p => p.classList.toggle("active", p.id === id));
+  navItems.forEach(n => n.classList.toggle("active", n.dataset.page === id));
+  title.textContent = titles[id] || "Dashboard";
   document.getElementById("sidebar").classList.remove("open");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -253,11 +136,6 @@ function toast(message) {
 
 // ===== STUDENT FEEDBACK SUBMISSION =====
 document.getElementById("submitFeedback").addEventListener("click", () => {
-  if (currentUser !== "student") {
-    toast("Only students can submit feedback.");
-    return;
-  }
-
   const groups = [...document.querySelectorAll(".rating-group")];
   if (groups.some(g => !g.querySelector(".selected"))) {
     toast("Please rate all five questions.");
@@ -300,35 +178,94 @@ document.getElementById("submitFeedback").addEventListener("click", () => {
 
   allFeedback.push(feedback);
 
+  // Update student history
   const row = document.createElement("tr");
   row.innerHTML = `<td>${course.course_name}</td><td>${faculty.faculty_name}</td><td>${feedback.date}</td><td><b>${avg}/10</b></td><td><span class="badge green">Submitted</span></td>`;
   document.getElementById("historyEmpty")?.remove();
   document.getElementById("historyBody").prepend(row);
 
+  // Update recent activity
   document.getElementById("recentEmpty")?.remove();
   const activity = document.createElement("div");
   activity.className = "activity";
   activity.innerHTML = `<span class="dot"></span><div><strong>${course.course_name}</strong><p>Submitted just now</p></div><span class="rating">${avg}/10</span>`;
   document.querySelector("#dashboard .panel:nth-child(2)").appendChild(activity);
 
+  // Update counter
   const count = document.getElementById("feedbackCount");
   count.textContent = Number(count.textContent) + 1;
 
+  // Reset form
   document.querySelectorAll(".rating-group button").forEach(x => x.classList.remove("selected"));
   updateProgress();
   document.getElementById("comment").value = "";
   document.getElementById("anonymous").checked = false;
 
+  // Redirect and notify
   toast("Feedback submitted successfully ✓");
   setTimeout(() => showPage("history"), 700);
 
+  // Update admin views
   updateAdminDashboard();
   updateAdminFeedbackTable();
 });
 
-document.getElementById("logoutBtn").addEventListener("click", handleLogout);
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  toast("Demo logout — connect this to your backend later.");
+});
 
-document.getElementById("loginForm").addEventListener("submit", handleLoginSubmit);
+// ===== ACCOUNT SWITCHING =====
+document.getElementById("switchAccountBtn").addEventListener("click", () => {
+  document.getElementById("switchModal").classList.add("active");
+});
+
+document.querySelectorAll(".account-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const account = btn.dataset.account;
+    switchAccount(account);
+    document.getElementById("switchModal").classList.remove("active");
+  });
+});
+
+// Close modal when clicking outside
+document.getElementById("switchModal").addEventListener("click", (e) => {
+  if (e.target.id === "switchModal") {
+    document.getElementById("switchModal").classList.remove("active");
+  }
+});
+
+function switchAccount(account) {
+  currentUser = account;
+
+  if (account === "student") {
+    document.getElementById("studentNav").classList.remove("hidden");
+    document.getElementById("adminNav").classList.add("hidden");
+    document.getElementById("brandSubtitle").textContent = "Student Feedback System";
+    document.getElementById("pageEyebrow").textContent = "ACADEMIC PORTAL";
+    document.getElementById("avatarDisplay").textContent = "AS";
+    document.getElementById("userNameDisplay").textContent = studentProfile.name;
+    document.getElementById("userRoleDisplay").textContent = `${studentProfile.department} • S${studentProfile.semester}`;
+    document.getElementById("topAvatar").textContent = "AS";
+    document.getElementById("switchAccountBtn").textContent = "🔄 Switch Account";
+
+    showPage("dashboard");
+    toast("Switched to Student Account");
+  } else {
+    document.getElementById("studentNav").classList.add("hidden");
+    document.getElementById("adminNav").classList.remove("hidden");
+    document.getElementById("brandSubtitle").textContent = "Admin Dashboard";
+    document.getElementById("pageEyebrow").textContent = "ADMINISTRATION";
+    document.getElementById("avatarDisplay").textContent = "AD";
+    document.getElementById("userNameDisplay").textContent = "Administrator";
+    document.getElementById("userRoleDisplay").textContent = "System Admin";
+    document.getElementById("topAvatar").textContent = "AD";
+    document.getElementById("switchAccountBtn").textContent = "🔄 Student";
+
+    updateAdminDashboard();
+    showPage("admin-dashboard");
+    toast("Switched to Admin Account");
+  }
+}
 
 // ===== ADMIN DASHBOARD =====
 function updateAdminDashboard() {
@@ -571,5 +508,3 @@ if (courseFilterSelect) {
     ${courseCatalog.map(course => `<option value="${course.course_name}">${course.course_name}</option>`).join("")}
   `;
 }
-
-restoreSavedSession();
