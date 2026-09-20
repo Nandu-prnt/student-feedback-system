@@ -62,3 +62,11 @@ CREATE TABLE Response (
     FOREIGN KEY (feedback_id) REFERENCES Feedback(feedback_id),
     FOREIGN KEY (question_id) REFERENCES Question(question_id)
 );
+
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('student', 'admin') NOT NULL
+);
