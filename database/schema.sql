@@ -64,9 +64,53 @@ CREATE TABLE Response (
 );
 
 
-CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(100) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
-    role ENUM('student', 'admin') NOT NULL
-);
+
+-- Run AFTER your existing schema
+USE feedback;
+
+-- Columns the frontend needs
+ALTER TABLE Course ADD COLUMN course_code VARCHAR(10);
+ALTER TABLE Student ADD COLUMN department VARCHAR(100);
+
+-- Auto-generated IDs for new submissions
+ALTER TABLE Feedback MODIFY feedback_id INT AUTO_INCREMENT;
+ALTER TABLE Response MODIFY response_id INT AUTO_INCREMENT;
+
+-- Allow longer comments
+ALTER TABLE Response MODIFY comment TEXT;
+
+-- ===== Seed data (matches the frontend) =====
+INSERT IGNORE INTO Student (student_id, name, email, semester, department) VALUES
+(1001, 'Alex Student', 'alex.student@college.edu', 3, 'Computer Science & Business Systems');
+
+INSERT IGNORE INTO Faculty (faculty_id, faculty_name, dept) VALUES
+(1, 'Dr. Meera Nair', 'CSE'),
+(2, 'Prof. Rahul Mathew', 'CSE'),
+(3, 'Dr. Anil Kumar', 'CSE'),
+(4, 'Dr. Suresh P.', 'Mathematics'),
+(5, 'Ms. Anjali Joseph', 'Humanities');
+
+INSERT IGNORE INTO Course (course_id, credits, course_name, course_code) VALUES
+(1, 4, 'Database Management Systems', 'CS301'),
+(2, 4, 'Computer Organization', 'CS302'),
+(3, 4, 'Data Structures', 'CS303'),
+(4, 3, 'Discrete Mathematics', 'MA301'),
+(5, 3, 'Business Communication', 'HU301');
+
+INSERT IGNORE INTO Course_Offering (offering_id, acad_year, faculty_id, course_id) VALUES
+(101, '2025-2026', 1, 1),
+(102, '2025-2026', 2, 2),
+(103, '2025-2026', 3, 3),
+(104, '2025-2026', 4, 4),
+(105, '2025-2026', 5, 5);
+
+INSERT IGNORE INTO Feedback_Form (form_id, title, status) VALUES
+(1, 'Semester Feedback Form', 'ACTIVE'),
+(2, 'Mid Semester Feedback', 'CLOSED');
+
+INSERT IGNORE INTO Question (question_id, q_text, q_type) VALUES
+(1, 'How clearly does the faculty explain concepts?', 'rating'),
+(2, 'How effective are the teaching methods?', 'rating'),
+(3, 'How well does the faculty interact with students?', 'rating'),
+(4, 'How useful are the course materials?', 'rating'),
+(5, 'Overall, how satisfied are you with this course?', 'rating');
